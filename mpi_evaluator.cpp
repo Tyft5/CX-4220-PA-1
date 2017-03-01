@@ -49,7 +49,7 @@ void scatter(const int n, double* scatter_values, int &n_local, double* &local_v
 }
 
 double broadcast(double value, int source_rank, const MPI_Comm comm){
-    //Implementation
+    //Implemented here:
 	int rank , size;
 	MPI_Comm_size (comm , &size );
 	MPI_Comm_rank (comm , &rank );
