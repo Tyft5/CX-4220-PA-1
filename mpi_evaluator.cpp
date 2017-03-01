@@ -9,7 +9,8 @@
 #include "mpi_evaluator.h"
 #include "const.h"
 #include <math.h>
- #include <assert.h>
+#include <assert.h>
+#include <stdlib.h>
 
 void scatter(const int n, double* scatter_values, int &n_local, double* &local_values, int source_rank, const MPI_Comm comm){
     //Implementation
