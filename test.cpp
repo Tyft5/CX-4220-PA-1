@@ -69,6 +69,37 @@ double broadcast(double value, int source_rank, const MPI_Comm comm){
     return value;
 }
 
+void parallel_prefix(const int n, const double* values, double* prefix_results, const int OP, const MPI_Comm comm){
+    //Implementation
+    int rank , size, rank2, total;
+    MPI_Comm_size (comm , &size );
+    MPI_Comm_rank (comm , &rank );
+
+    prefix_results[0] = values[0];
+    for (int i = 1; i < n; i++) {
+        prefix_results[i] = prefix_results[i - 1] + values[i];
+    }
+    prefix_results[n] = prefix_results[n - 1];
+
+    int d = log2(size+1);
+    for(int i = 0; i < d; i++){
+        rank2 = rank^(1<<(i));
+        total = prefix_results[n];
+
+        MPI_Send(&total, 1, MPI_DOUBLE, rank2, 111, comm );
+        MPI_Status stat;
+        MPI_Recv(&total, 1, MPI_DOUBLE, rank2, MPI_ANY_TAG, comm, &stat);
+
+        if (rank > rank2) {
+            for (int i = 0; i <= n; i++) {
+                prefix_results[i] += total;
+            }
+        } else {
+                prefix_results[n] += total;
+        }
+    }
+}
+
 // int main(int argc, char *argv[]) {
 //     MPI_Init(&argc, &argv);
 //     MPI_Comm comm = MPI_COMM_WORLD;
@@ -96,14 +127,3 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-	// if(rank == source_rank){
-	// 	for(int i = 0; i < size; i++){
-	// 		if(i != source_rank){
-	// 			MPI_Send(&value,1,MPI_INT,i,111,comm );
-	// 		}
-	// 	}
-	// } else{
-	// 	MPI_Status stat;
-	// 	MPI_Recv(&value,1,MPI_INT,source_rank,MPI_ANY_TAG,comm , &stat);
-		
-	// }

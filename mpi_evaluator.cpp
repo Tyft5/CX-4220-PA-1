@@ -73,26 +73,32 @@ double broadcast(double value, int source_rank, const MPI_Comm comm){
 
 void parallel_prefix(const int n, const double* values, double* prefix_results, const int OP, const MPI_Comm comm){
     //Implementation
-        //Implemented here:
     int rank , size, rank2, total;
     MPI_Comm_size (comm , &size );
     MPI_Comm_rank (comm , &rank );
 
+    prefix_results[0] = values[0];
+    for (int i = 1; i < n; i++) {
+        prefix_results[i] = prefix_results[i - 1] + values[i];
+    }
+    prefix_results[n] = prefix_results[n - 1];
 
     int d = log2(size+1);
     for(int i = 0; i < d; i++){
         rank2 = rank^(1<<(i));
         total = prefix_results[n];
-        MPI_Send(&total,1,MPI_DOUBLE,(rank^(1<<(i))),111,comm );
-        MPI_Status stat;
-        MPI_Recv(&total,1,MPI_DOUBLE,(rank^(1<<(i))),MPI_ANY_TAG,comm , &stat);
-        if(rank && 1<<(i)){
-            
 
-        } else{
-            
+        MPI_Send(&total, 1, MPI_DOUBLE, rank2, 111, comm );
+        MPI_Status stat;
+        MPI_Recv(&total, 1, MPI_DOUBLE, rank2, MPI_ANY_TAG, comm, &stat);
+
+        if (rank > rank2) {
+            for (int i = 0; i <= n; i++) {
+                prefix_results[i] += total;
+            }
+        } else {
+                prefix_results[n] += total;
         }
-        MPI_Barrier(comm);
     }
 }
 
