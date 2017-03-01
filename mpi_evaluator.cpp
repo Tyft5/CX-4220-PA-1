@@ -73,7 +73,27 @@ double broadcast(double value, int source_rank, const MPI_Comm comm){
 
 void parallel_prefix(const int n, const double* values, double* prefix_results, const int OP, const MPI_Comm comm){
     //Implementation
+        //Implemented here:
+    int rank , size, rank2, total;
+    MPI_Comm_size (comm , &size );
+    MPI_Comm_rank (comm , &rank );
 
+
+    int d = log2(size+1);
+    for(int i = 0; i < d; i++){
+        rank2 = rank^(1<<(i));
+        total = prefix_results[n];
+        MPI_Send(&total,1,MPI_DOUBLE,(rank^(1<<(i))),111,comm );
+        MPI_Status stat;
+        MPI_Recv(&total,1,MPI_DOUBLE,(rank^(1<<(i))),MPI_ANY_TAG,comm , &stat);
+        if(rank && 1<<(i)){
+            
+
+        } else{
+            
+        }
+        MPI_Barrier(comm);
+    }
 }
 
 double mpi_poly_evaluator(const double x, const int n, const double* constants, const MPI_Comm comm){
