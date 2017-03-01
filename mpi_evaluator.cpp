@@ -37,7 +37,7 @@ void scatter(const int n, double* scatter_values, int &n_local, double* &local_v
                 for (int j = i * m, k = 0; j < ((i+1) * m) && k < m; j++, k++) {
                     local_values_i[k] = scatter_values[j];
                 }
-                MPI_Send(&local_values_i, m, MPI_DOUBLE, i, 1, comm);
+                MPI_Send(local_values_i, m, MPI_DOUBLE, i, 1, comm);
             }
         }
     } else {
