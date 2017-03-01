@@ -29,7 +29,7 @@ void scatter(const int n, double* scatter_values, int &n_local, double* &local_v
                 for (int j = i * m, k = 0; j < ((i+1) * m) && k < m; j++, k++) {
                     local_values_i[k] = scatter_values[j];
                 }
-                MPI_Send(&local_values_i, m, MPI_DOUBLE, i, 1, comm);
+                MPI_Send(local_values_i, m, MPI_DOUBLE, i, 1, comm);
             }
         }
     } else {
@@ -41,7 +41,7 @@ void scatter(const int n, double* scatter_values, int &n_local, double* &local_v
     MPI_Barrier(comm);
     printf("Rank %i was given the values %f", rank, local_values[0]);
     for (int i = 1; i < n_local; i++) {
-    	printf("%f, ", local_values[i]);
+    	printf(", %f", local_values[i]);
     }
     printf("\n");
 }
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
 	MPI_Init(&argc, &argv);
 	const MPI_Comm comm = MPI_COMM_WORLD;
 	double* loc_arr;
-	int n_local, source = 2;
+	int n_local, source = 0;
 	const int n = 10;
 	// double scatter_vals[10] = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9.};
     double* scatter_vals = (double *) malloc(10 * sizeof(double));
