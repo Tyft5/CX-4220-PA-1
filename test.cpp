@@ -68,6 +68,14 @@ double broadcast(double value, int source_rank, const MPI_Comm comm){
     return value;
 }
 
+// int main(int argc, char *argv[]) {
+//     MPI_Init(&argc, &argv);
+//     MPI_Comm comm = MPI_COMM_WORLD;
+//     broadcast(5,0,comm);
+//     MPI_Finalize();
+//     return 0;
+// }
+
 int main(int argc, char *argv[]) {
 	MPI_Init(&argc, &argv);
 	const MPI_Comm comm = MPI_COMM_WORLD;
