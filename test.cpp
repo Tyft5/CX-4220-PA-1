@@ -90,12 +90,22 @@ void parallel_prefix(const int n, const double* values, double* prefix_results, 
         MPI_Status stat;
         MPI_Recv(&total, 1, MPI_DOUBLE, rank2, MPI_ANY_TAG, comm, &stat);
 
-        if (rank > rank2) {
-            for (int i = 0; i <= n; i++) {
-                prefix_results[i] += total;
+        if (OP == PREFIX_OP_SUM) {
+            if (rank > rank2) {
+                for (int i = 0; i <= n; i++) {
+                    prefix_results[i] += total;
+                }
+            } else {
+                    prefix_results[n] += total;
             }
-        } else {
-                prefix_results[n] += total;
+        } else if (OP == PREFIX_OP_PRODUCT) {
+            if (rank > rank2) {
+                for (int i = 0; i <= n; i++) {
+                    prefix_results[i] *= total;
+                }
+            } else {
+                    prefix_results[n] *= total;
+            }
         }
     }
 }
