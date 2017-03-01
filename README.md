@@ -2,9 +2,11 @@
 Programming Assignment 1
 
 Setting up git:
+
 Download git via command line tools
 
 $ git config --global user.name "YOUR NAME"
+
 $ git config --global user.email "YOUR EMAIL USED FOR GITHUB"
 
 Navigate to where you want to clone the repository (where you want the folder containing program files to go).
@@ -15,9 +17,11 @@ $ git clone https://github.gatech.edu/ttippens6/CX-4220-PA-1.git
 You now have a local copy you can work on.
 
 Using git:
+
 Before making changes, do
 
 $ git pull
+
 $ git checkout master
 
 Then do your changes.
