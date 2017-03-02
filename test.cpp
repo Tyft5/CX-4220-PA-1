@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include "const.h"
 
 void scatter(const int n, double* scatter_values, int &n_local, double* &local_values, int source_rank, const MPI_Comm comm){
     //Implementation
@@ -108,6 +109,7 @@ void parallel_prefix(const int n, const double* values, double* prefix_results, 
             }
         }
     }
+    printf("Rank %i has total sum %f\n",rank, prefix_results[n]);
 }
 
 // int main(int argc, char *argv[]) {
@@ -124,16 +126,22 @@ int main(int argc, char *argv[]) {
 	double* loc_arr;
 	int n_local, source = 0;
 	const int n = 10;
-	// double scatter_vals[10] = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9.};
-    double* scatter_vals = (double *) malloc(10 * sizeof(double));
-    for (int i = 0; i < 10; i++) {
-        scatter_vals[i] = i;
-    }
-    double* local_values;
-	scatter(n, scatter_vals, n_local, local_values, source, comm);
+	// double scatter_vals[8] = {0., 1., 2., 3., 4., 5., 6., 7.};
+ //    double* scatter_vals = (double *) malloc(10 * sizeof(double));
+ //    for (int i = 0; i < 10; i++) {
+ //        scatter_vals[i] = i;
+ //    }
+ //    double* local_values;
+	// scatter(n, scatter_vals, n_local, local_values, source, comm);
+    
+    double arr[4] = {0., 1., 2., 3.};
+    //double* arr = (double *) malloc(8 * sizeof(double))
+    double* results = (double *) malloc(5 * sizeof(double));
+    parallel_prefix(4,arr,results,PREFIX_OP_SUM,comm);
+
 	MPI_Finalize();
-    free(scatter_vals);
-    free(local_values);
+    // free(scatter_vals);
+    // free(local_values);
 	return 0;
 }
 
