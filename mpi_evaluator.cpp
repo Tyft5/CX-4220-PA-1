@@ -78,8 +78,14 @@ void parallel_prefix(const int n, const double* values, double* prefix_results, 
     MPI_Comm_rank (comm , &rank );
 
     prefix_results[0] = values[0];
-    for (int i = 1; i < n; i++) {
-        prefix_results[i] = prefix_results[i - 1] + values[i];
+    if (OP == PREFIX_OP_SUM) {
+        for (int i = 1; i < n; i++) {
+            prefix_results[i] = prefix_results[i - 1] + values[i];
+        }
+    } else if (OP == PREFIX_OP_PRODUCT) {
+        for (int i = 1; i < n; i++) {
+            prefix_results[i] = prefix_results[i - 1] * values[i];
+        }
     }
     prefix_results[n] = prefix_results[n - 1];
 
@@ -117,8 +123,15 @@ double mpi_poly_evaluator(const double x, const int n, const double* constants, 
     double answer = 0;
     double* pre_vec = (double *) malloc(n * sizeof(double));
     double* prefix_results = (double *) malloc((n + 1) * sizeof(double));
+    int rank;
+    MPI_Comm_rank (comm , &rank );
+    if(rank == 0){
+        pre_vec[0] = 1;
+    } else {
+        pre_vec[0] = x;
+    }
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 1; i < n; i++) {
         pre_vec[i] = x;
     }
 
