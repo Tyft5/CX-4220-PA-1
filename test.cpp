@@ -149,9 +149,9 @@ double mpi_poly_evaluator(const double x, const int n, const double* constants, 
 int main(int argc, char *argv[]) {
 	MPI_Init(&argc, &argv);
 	const MPI_Comm comm = MPI_COMM_WORLD;
-	double* loc_arr;
-	int n_local, source = 0;
-	const int n = 10;
+	// double* loc_arr;
+	// int n_local, source = 0;
+	// const int n = 10;
 	// double scatter_vals[8] = {0., 1., 2., 3., 4., 5., 6., 7.};
  //    double* scatter_vals = (double *) malloc(10 * sizeof(double));
  //    for (int i = 0; i < 10; i++) {
@@ -160,10 +160,13 @@ int main(int argc, char *argv[]) {
  //    double* local_values;
 	// scatter(n, scatter_vals, n_local, local_values, source, comm);
     
-    double arr[4] = {0., 1., 2., 3.};
-    //double* arr = (double *) malloc(8 * sizeof(double))
-    double* results = (double *) malloc(5 * sizeof(double));
-    parallel_prefix(4,arr,results,PREFIX_OP_SUM,comm);
+    double arr[4] = {1., 1., 2., 3.};
+    const double x = 2;
+    // double* arr = (double *) malloc(8 * sizeof(double))
+    // double* results = (double *) malloc(5 * sizeof(double));
+    // parallel_prefix(4,arr,results,PREFIX_OP_SUM,comm);
+    printf("here\n");
+    // double ans = mpi_poly_evaluator(x, 4, arr, comm);
 
 	MPI_Finalize();
     // free(scatter_vals);
