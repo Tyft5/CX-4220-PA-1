@@ -89,13 +89,18 @@ void parallel_prefix(const int n, const double* values, double* prefix_results, 
     prefix_results[n] = prefix_results[n - 1];
 
     int d = log2(size+1);
-    for(int i = 0; i < d; i++){
+    for(int i = 0; i <= d; i++){
         rank2 = rank^(1<<(i));
         total = prefix_results[n];
-
-        MPI_Send(&total, 1, MPI_DOUBLE, rank2, 111, comm );
-        MPI_Status stat;
-        MPI_Recv(&total, 1, MPI_DOUBLE, rank2, MPI_ANY_TAG, comm, &stat);
+        if(rank2 < size){
+            printf("rank: %i rank2: %i\n", rank,rank2);
+            MPI_Send(&total, 1, MPI_DOUBLE, rank2, 111, comm );
+            MPI_Status stat;
+            MPI_Recv(&total, 1, MPI_DOUBLE, rank2, MPI_ANY_TAG, comm, &stat);
+        } else {
+            MPI_Status stat;
+            MPI_Recv(&total, 1, MPI_DOUBLE, size-1, MPI_ANY_TAG, comm, &stat);
+        }
 
         if (OP == PREFIX_OP_SUM) {
             if (rank > rank2) {
@@ -115,7 +120,7 @@ void parallel_prefix(const int n, const double* values, double* prefix_results, 
             }
         }
     }
-    //printf("Rank %i has total sum %f\n",rank, prefix_results[n]);
+    printf("Rank %i has total sum %f\n",rank, prefix_results[n]);
 }
 
 double mpi_poly_evaluator(const double x, const int n, const double* constants, const MPI_Comm comm){
@@ -173,13 +178,14 @@ int main(int argc, char *argv[]) {
  //    double* local_values;
 	// scatter(n, scatter_vals, n_local, local_values, source, comm);
     
-    double arr[2] = {1., 2.};
-    const double x = 2;
-    // double* arr = (double *) malloc(8 * sizeof(double))
+    // double arr[2] = {1., 2.};
+    // const double x = 2;
+    //double* arr = (double *) malloc(8 * sizeof(double))
     // double* results = (double *) malloc(5 * sizeof(double));
-    //parallel_prefix(4,arr,results,PREFIX_OP_SUM,comm);
-    double ans = mpi_poly_evaluator(x, 2, arr, comm);
-    printf("%f\n",ans);
+    // parallel_prefix(2,arr,results,PREFIX_OP_SUM,comm);
+    //double ans = mpi_poly_evaluator(x, 2, arr, comm);
+    //printf("%f\n",ans);
+    broadcast(5,0,comm);
 	MPI_Finalize();
     // free(scatter_vals);
     // free(local_values);
