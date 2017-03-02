@@ -112,6 +112,32 @@ void parallel_prefix(const int n, const double* values, double* prefix_results, 
     printf("Rank %i has total sum %f\n",rank, prefix_results[n]);
 }
 
+double mpi_poly_evaluator(const double x, const int n, const double* constants, const MPI_Comm comm){
+    //Implementation
+    double answer = 0;
+    double* pre_vec = (double *) malloc(n * sizeof(double));
+    double* prefix_results = (double *) malloc((n + 1) * sizeof(double));
+
+    for (int i = 0; i < n; i++) {
+        pre_vec[i] = x;
+    }
+
+    parallel_prefix(n, pre_vec, prefix_results, PREFIX_OP_PRODUCT, comm);
+
+    for (int i = 0; i < n; i++) {
+        pre_vec[i] = prefix_results[i] * constants[i];
+    }
+
+    parallel_prefix(n, pre_vec, prefix_results, PREFIX_OP_SUM, comm);
+
+    answer = prefix_results[n];
+
+    free(pre_vec);
+    free(prefix_results);
+
+    return answer;
+}
+
 // int main(int argc, char *argv[]) {
 //     MPI_Init(&argc, &argv);
 //     MPI_Comm comm = MPI_COMM_WORLD;
