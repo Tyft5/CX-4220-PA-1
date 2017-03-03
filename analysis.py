@@ -9,10 +9,10 @@ bcast_times = []; peval_times = []
 bcast_t_all = np.array([])
 peval_t_all = np.array([])
 
-p = range(2, 13);
+p = range(2, 25)
 
 for i in p:
-    filename = filename_beg + i + '.txt'
+    filename = filename_beg + str(i) + '.txt'
     with open(filename) as f:
         for line in f:
             x, result, bcast_t, peval_t = line.split()

@@ -4,36 +4,42 @@ echo "Compiling..."
 rm *.o
 rm ./poly-eval
 make
-echo "done. Creating files..."
+echo "Creating files..."
 
-pmax=12
+pmax=24
 p=2
-while [ $p -le $pmax ] do
-    echo "" > n-100k_p-$p.txt
-    let p=p+1
+while [ $p -le $pmax ]; do
+    echo "" > n-100k_p-${p}.txt
+    (( p++ ))
 done
 
-seq 100000 | shuf > batch_consts.txt
+echo "100000" > batch_consts.txt
+seq 100000 | shuf >> batch_consts.txt
 
-echo "" > batch_vars.txt
+echo "10" > batch_vars.txt
 i=0
-while [ $i -lt 10 ] do
-    RANDOM=$$
+RANDOM=$$
+while [ $i -lt 10 ]; do
     r1=$((${RANDOM}%98+1))
     printf -v r1 "0.%.2d" $r1
     echo "$r1" >> batch_vars.txt
-    let i=i+1
+    (( i++ ))
 done
 
-echo "done. Running..."
+echo "Running..."
 
-i=0
+MPIRUN=/usr/lib64/openmpi/bin/mpirun
+
+j=0
 p=2
-while [ $p -le $pmax]
-    while [ $i -lt 10 ] do
-        mpirun -np $p batch_consts.txt batch_vars.txt >> n-100k_p-$p.txt
-        let i=i+1
+while [ $p -le $pmax ]; do
+    while [ $j -lt 10 ]; do
+        $MPIRUN -np $p --hostfile $PBS_NODEFILE ./poly-eval batch_consts.txt batch_vars.txt >> n-100k_p-$p.txt
+        let j=j+1
     done
+    let p=p+1
+    j=0
+done
 
-echo "done. Exiting."
+echo "Exiting."
 
