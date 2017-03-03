@@ -59,7 +59,6 @@ int main(int argc, char** argv) {
         int local_n;
         double* local_values;
         scatter(n, &global_constants[0], local_n, local_values, 0, comm);
-        printf("scatter success\n");
         MPI_Bcast(&m,1,MPI_INT, 0, comm);   //let all procs know how many evals
         double broadcast_time;
         for(int i=0; i<m; i++){
@@ -67,13 +66,11 @@ int main(int argc, char** argv) {
             
             set_time(t_start, rank, comm);
             v = broadcast(v, 0, comm);          //send x value to all the procs
-            printf("broadcast success\n");
             set_time(t_end, rank, comm);
             broadcast_time = get_duration(t_start, t_end);
 
             set_time(t_start, rank, comm);
             double result = mpi_poly_evaluator(v, local_n, local_values, comm); //eval
-            printf("poly success HUZZAH\n");
             set_time(t_end, rank, comm);
             poly_evaltime = get_duration(t_start, t_end);
 

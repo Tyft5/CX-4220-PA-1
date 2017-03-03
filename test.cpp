@@ -11,27 +11,52 @@ void scatter(const int n, double* scatter_values, int &n_local, double* &local_v
     MPI_Comm_size(comm , &size);
     MPI_Comm_rank(comm , &rank);
     if (rank == source_rank) {
-        int m = int(ceil(n / size));
+        int m = int(n / size);
+        int extra = n % size;
+        int z = m + 1;
         for (int i = 0; i < size; i++) {
-            if (i == rank) {
-                n_local = m;
+            if (i < extra) {
+                if (i == rank) {
+                    n_local = z;
 
-                local_values = (double *) malloc(m * sizeof(double));
-                // assert(local_values != NULL);
-                if (local_values == NULL) printf("local_values is NULL on rank %d\n", rank);
-                for (int j = i * m, k = 0; j < ((i+1) * m) && k < m; j++, k++) {
-                    local_values[k] = scatter_values[j];
+                    local_values = (double *) malloc(z * sizeof(double));
+                    if (local_values == NULL) printf("local_values is NULL on rank %d\n", rank);
+
+                    for (int j = i * (m + 1), k = 0; k < z; j++, k++) { // j < (((i+1) * m) + 1) && 
+                        local_values[k] = scatter_values[j];
+                    }
+                } else {
+                    MPI_Send(&z, 1, MPI_INT, i, 0, comm);
+
+                    double* local_values_i = (double *) malloc(z * sizeof(double));
+                    if (local_values_i == NULL) printf("local_values_i is NULL on rank %d\n", rank);
+
+                    for (int j = i * (m + 1), k = 0; k < z; j++, k++) { // j < ((i+1) * m + 1) && 
+                        local_values_i[k] = scatter_values[j];
+                    }
+                    MPI_Send(local_values_i, z, MPI_DOUBLE, i, 1, comm);
                 }
             } else {
-                MPI_Send(&m, 1, MPI_INT, i, 0, comm);
+                if (i == rank) {
+                    n_local = m;
 
-                double* local_values_i = (double *) malloc(n_local * sizeof(double));
-                // assert(local_values_i != NULL);
-                if (local_values_i == NULL) printf("local_values_i is NULL on rank %d\n", rank);
-                for (int j = i * m, k = 0; j < ((i+1) * m) && k < m; j++, k++) {
-                    local_values_i[k] = scatter_values[j];
+                    local_values = (double *) malloc(m * sizeof(double));
+                    if (local_values == NULL) printf("local_values is NULL on rank %d\n", rank);
+
+                    for (int j = (i * m) + extra, k = 0; k < m; j++, k++) {
+                        local_values[k] = scatter_values[j];
+                    }
+                } else {
+                    MPI_Send(&m, 1, MPI_INT, i, 0, comm);
+
+                    double* local_values_i = (double *) malloc(m * sizeof(double));
+                    if (local_values_i == NULL) printf("local_values_i is NULL on rank %d\n", rank);
+
+                    for (int j = (i * m) + extra, k = 0; k < m; j++, k++) { // j < ((i+1) * m) && 
+                        local_values_i[k] = scatter_values[j];
+                    }
+                    MPI_Send(local_values_i, m, MPI_DOUBLE, i, 1, comm);
                 }
-                MPI_Send(local_values_i, m, MPI_DOUBLE, i, 1, comm);
             }
         }
     } else {
@@ -54,7 +79,7 @@ double broadcast(double value, int source_rank, const MPI_Comm comm){
 	MPI_Comm_size (comm , &size );
 	MPI_Comm_rank (comm , &rank );
     double val;
-    printf("rank %i  %f\n",rank,value);
+    // printf("rank %i  %f\n",rank,value);
     if(rank == source_rank){
         val = value;
     } else{
@@ -141,7 +166,7 @@ void parallel_prefix(const int n, const double* values, double* prefix_results, 
             prefix_results[i] = prefix_results[i - 1] * values[i];
         }
     }
-    printf("Rank %i has local sums %f %f\n",rank, prefix_results[0], prefix_results[1]);
+    // printf("Rank %i has local sums %f %f\n",rank, prefix_results[0], prefix_results[1]);
 }
 
 double mpi_poly_evaluator(const double x, const int n, const double* constants, const MPI_Comm comm){
@@ -196,23 +221,30 @@ double mpi_poly_evaluator(const double x, const int n, const double* constants, 
 int main(int argc, char *argv[]) {
 	MPI_Init(&argc, &argv);
 	const MPI_Comm comm = MPI_COMM_WORLD;
+    int rank;
+    MPI_Comm_rank(comm, &rank);
 	// double* loc_arr;
-	// int n_local, source = 0;
-	// const int n = 10;
+	int n_local, source = 2;
+	const int n = 11;
 	// double scatter_vals[8] = {0., 1., 2., 3., 4., 5., 6., 7.};
- //    double* scatter_vals = (double *) malloc(10 * sizeof(double));
- //    for (int i = 0; i < 10; i++) {
- //        scatter_vals[i] = i;
- //    }
- //    double* local_values;
-	// scatter(n, scatter_vals, n_local, local_values, source, comm);
+    double* scatter_vals = (double *) malloc(n * sizeof(double));
+    for (int i = 0; i < n; i++) {
+        scatter_vals[i] = i;
+    }
+    double* local_values;
+	scatter(n, scatter_vals, n_local, local_values, source, comm);
+    // for (int i = 0; i < 2; i++) {
+    //     printf("Rank %d: %f", rank, local_values[i]);
+    // }
+    free(scatter_vals);
+    free(local_values);
     
-    double arr[2] = {2., 2.};
+    // double arr[2] = {2., 2.};
     // const double x = 2;
     //double* arr = (double *) malloc(8 * sizeof(double))
-    double* results = (double *) malloc(5 * sizeof(double));
-    parallel_prefix(2,arr,results,PREFIX_OP_SUM,comm);
-    //double ans = mpi_poly_evaluator(x, 2, arr, comm);
+    // double* results = (double *) malloc(5 * sizeof(double));
+    // parallel_prefix(2,arr,results,PREFIX_OP_SUM,comm);
+    // double ans = mpi_poly_evaluator(x, 2, arr, comm);
     //printf("%f\n",ans);
     //broadcast(5,0,comm);
 	MPI_Finalize();
