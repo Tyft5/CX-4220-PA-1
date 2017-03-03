@@ -6,8 +6,13 @@
  * 
  */
 
+#include <math.h>
+
 double poly_evaluator(const double x, const int n, const double* constants){
     //Implementation
-
-    return 0;
+    double sum = 0;
+    for (int i = 0; i < n; i++) {
+        sum += constants[i] * pow(x, i);
+    }
+    return sum;
 }
